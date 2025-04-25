@@ -104,3 +104,10 @@ unfixable = [
   "F841",   # Would remove unused variables
 ]
 flake8-unused-arguments.ignore-variadic-names = true  # allow unused *args/**kwargs
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+module = [
+  "edgar",
+]
+ignore_missing_imports = true
