@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier
+_commit: v0.2.0
+_src_path: gh:alan-turing-institute/python-project-template
+coc: our_coc
+email: davidsaljas@gmail.com
+full_name: David Salvador-Jasin
+license: MIT
+min_python_version: '3.10'
+org: dsj976
+project_name: sec_summarizer
+project_short_description: A software solution to summarize a company description
+    from the latest 10-K filing.
+python_name: sec_summarizer
+typing: no_typing
+url: https://github.com/dsj976/sec_summarizer
