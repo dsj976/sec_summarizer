@@ -9,6 +9,19 @@ class HuggingfaceSummarizer:
             msg = f"Error loading HuggingFace model '{model_name}': {e}"
             raise Exception(msg) from e
 
+    def _chunk_text(self, text: str, chunk_size: int) -> list:
+        """
+        Split the text into chunks of a specified size.
+
+        Args:
+            text (str): The text to split.
+            chunk_size (int): The size of each chunk.
+
+        Returns:
+            list: A list of text chunks.
+        """
+        return [text[i : i + chunk_size] for i in range(0, len(text), chunk_size)]
+
     def summarize(
         self,
         text: str,
@@ -31,4 +44,3 @@ class HuggingfaceSummarizer:
         Returns:
             str: The summarized text.
         """
-        pass
