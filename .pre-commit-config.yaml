@@ -39,3 +39,4 @@ repos:
           - pytest
           - transformers
           - edgartools
+          - sqlalchemy
