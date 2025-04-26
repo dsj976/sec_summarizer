@@ -1,9 +1,12 @@
 import os
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
 
-from sec_summarizer.database.engine import init_db
+from sec_summarizer.api.schemas import CompanyCreate, CompanyResponse
+from sec_summarizer.database.engine import get_db, init_db
+from sec_summarizer.database.models import Company
 
 app = FastAPI(
     title="SEC Summarizer API",
@@ -13,6 +16,25 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
+
+
+@app.post("/companies/", response_model=CompanyResponse)
+def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
+    """Create a new company record in the database."""
+
+    # check if the company already exists
+    existing_company = db.query(Company).filter_by(ticker=company.ticker).first()
+    if existing_company:
+        raise HTTPException(
+            status_code=400,
+            detail="Company with this ticker already exists.",
+        )
+
+    new_company = Company(ticker=company.ticker, name=company.name)
+    db.add(new_company)
+    db.commit()
+    db.refresh(new_company)
+    return new_company
 
 
 def main():
