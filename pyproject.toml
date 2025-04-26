@@ -31,6 +31,7 @@ dependencies = [
   "transformers[torch]",
   "fastapi[standard]",
   "uvicorn[standard]",
+  "sqlalchemy",
 ]
 
 [project.optional-dependencies]
