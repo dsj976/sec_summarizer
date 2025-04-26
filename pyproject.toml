@@ -28,6 +28,7 @@ classifiers = [
 ]
 dependencies = [
   "edgartools",
+  "transformers[torch]",
 ]
 
 [project.optional-dependencies]
