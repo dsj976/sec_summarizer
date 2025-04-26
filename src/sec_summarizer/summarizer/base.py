@@ -22,11 +22,11 @@ class Summarizer:
     def _chunk_text(text: str, chunk_size: int) -> list:
         """
         Split the text into chunks containing full sentences,
-        with a maximum size of chunk_size.
+        with a maximum length of chunk_size.
 
         Args:
             text (str): The text to split.
-            chunk_size (int): The maximum size of each chunk.
+            chunk_size (int): The maximum length, in characters, of each chunk.
 
         Returns:
             list: A list of text chunks.
@@ -48,9 +48,11 @@ class Summarizer:
 
         return chunks
 
-    def summarize(self, chunk_size=1024):
+    def summarize(self, chunk_size=2000):
         """
         Summarize the given text using the loaded model.
+        If the text is longer than chunk_size characters, it will be split into
+        smaller chunks, and each chunk will be summarized separately.
         """
         if len(self.text) > chunk_size:
             self.chunks = self._chunk_text(self.text, chunk_size=chunk_size)
