@@ -48,13 +48,12 @@ class Summarizer:
 
         return chunks
 
-    def summarize(self) -> str:
+    def summarize(self, chunk_size=1024):
         """
         Summarize the given text using the loaded model.
         """
-        chunk_size = 1024
         if len(self.text) > chunk_size:
             self.chunks = self._chunk_text(self.text, chunk_size=chunk_size)
         else:
             self.chunks = [self.text]
-        return self.client.summarize(self.chunks)
+        self.summary = self.client.summarize(self.chunks)
