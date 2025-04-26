@@ -12,15 +12,14 @@ class HuggingfaceSummarizer:
     def summarize(
         self,
         chunks: list[str],
-        max_length: int = 150,
+        max_length: int = 120,
         min_length: int = 30,
         do_sample: bool = False,
     ) -> str:
         """
         Summarize the given text using the Hugging Face model.
         If multiple chunks are provided, they will be summarized
-        hierarchically: first, each chunk will be summarized individually,
-        and then the resulting summaries will be summarized again.
+        separately and concatenated into a single summary.
 
         Args:
             chunks (list[str]): The text to summarize, split into chunks.
@@ -34,7 +33,8 @@ class HuggingfaceSummarizer:
         """
 
         summaries = []
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks):
+            print(f"Summarizing chunk {i + 1}/{len(chunks)}...")
             try:
                 summary = self.summarizer(
                     chunk,
@@ -52,12 +52,6 @@ class HuggingfaceSummarizer:
             raise Exception(msg)
 
         if len(summaries) > 1:
-            final_summary = " ".join(summaries)
-            return self.summarizer(
-                final_summary,
-                max_length=max_length,
-                min_length=min_length,
-                do_sample=do_sample,
-            )[0]["summary_text"]
+            return " ".join(summaries)
 
         return summaries[0]
