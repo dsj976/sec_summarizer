@@ -30,6 +30,7 @@ dependencies = [
   "edgartools",
   "transformers[torch]",
   "fastapi[standard]",
+  "uvicorn[standard]",
 ]
 
 [project.optional-dependencies]
