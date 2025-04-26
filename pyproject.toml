@@ -29,6 +29,7 @@ classifiers = [
 dependencies = [
   "edgartools",
   "transformers[torch]",
+  "fastapi[standard]",
 ]
 
 [project.optional-dependencies]
