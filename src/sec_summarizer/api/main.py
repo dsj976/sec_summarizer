@@ -52,7 +52,7 @@ def get_company(ticker: str, db: Session = Depends(get_db)):
     if not company:
         raise HTTPException(
             status_code=404,
-            detail="Company not found.",
+            detail=f"Company {ticker} not found.",
         )
     return company
 
@@ -76,7 +76,7 @@ def create_filing(
     if not company:
         raise HTTPException(
             status_code=404,
-            detail="Company not found.",
+            detail=f"Company {ticker} not found.",
         )
 
     # check if the filing already exists
@@ -90,7 +90,7 @@ def create_filing(
     if existing_filing:
         raise HTTPException(
             status_code=400,
-            detail="Filing for this company already exists.",
+            detail=f"Filing for {ticker} already exists.",
         )
 
     # fetch the filing from SEC EDGAR
@@ -158,7 +158,7 @@ def summarize_filing(
     if not summarizer.summary:
         raise HTTPException(
             status_code=500,
-            detail="Failed to summarize the business description.",
+            detail=f"Failed to summarize the business description for {ticker}.",
         )
 
     # update the filing with the summary
