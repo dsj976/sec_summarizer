@@ -176,6 +176,31 @@ def summarize_filing(
     return filing
 
 
+@app.get("/filings/{ticker}", response_model=FilingResponse)
+def get_filing(ticker: str, db: Session = Depends(get_db)):
+    """Get a filing record by its company ticker symbol."""
+
+    company = db.query(Company).filter_by(ticker=ticker).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Company {ticker} not found.",
+        )
+    filing = (
+        db.query(Filing)
+        .filter_by(
+            company_id=company.id,
+        )
+        .first()
+    )
+    if not filing:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Filing for {ticker} not found.",
+        )
+    return filing
+
+
 def main():
     init_db()
 
