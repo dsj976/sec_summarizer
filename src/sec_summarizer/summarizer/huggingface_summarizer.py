@@ -2,6 +2,8 @@ from transformers import pipeline
 
 
 class HuggingfaceSummarizer:
+    """A class to summarize text using Hugging Face's transformers library."""
+
     def __init__(self, model_name: str = "facebook/bart-large-cnn"):
         try:
             self.summarizer = pipeline("summarization", model=model_name)

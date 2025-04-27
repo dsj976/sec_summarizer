@@ -2,6 +2,12 @@ from sec_summarizer.summarizer.huggingface_summarizer import HuggingfaceSummariz
 
 
 class Summarizer:
+    """
+    A base class for summarizing text using different models.
+    Currently supports Hugging Face models only,
+    via the `huggingface-` prefix.
+    """
+
     def __init__(self, text: str, model: str):
         self.text = text
         self.model = model
