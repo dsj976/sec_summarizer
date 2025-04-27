@@ -9,7 +9,6 @@ from sec_summarizer.api.schemas import (
     CompanyCreate,
     CompanyResponse,
     FilingResponse,
-    SummaryResponse,
 )
 from sec_summarizer.database.engine import get_db, init_db
 from sec_summarizer.database.models import Company, Filing
@@ -114,7 +113,7 @@ def create_filing(
     return new_filing
 
 
-@app.patch("/filings/{ticker}/summarize", response_model=SummaryResponse)
+@app.patch("/filings/{ticker}/summarize", response_model=FilingResponse)
 def summarize_filing(
     ticker: str,
     model: str = "huggingface-facebook/bart-large-cnn",

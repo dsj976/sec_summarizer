@@ -23,17 +23,9 @@ class FilingResponse(BaseModel):
     filing_type: str
     filing_date: datetime
     business_description: str
-
-
-class SummaryResponse(BaseModel):
-    id: int
-    company_id: int
-    filing_type: str
-    filing_date: datetime
-    business_description: str
-    business_summary: str
-    model_used: str
-    created_at: datetime
+    business_summary: str | None = None
+    model_used: str | None = None
+    created_at: datetime | None = None
 
     class Config:
         orm_mode = True
