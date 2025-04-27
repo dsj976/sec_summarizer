@@ -1,9 +1,9 @@
 import os
+from datetime import datetime
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from sec_summarizer.api.schemas import (
     CompanyCreate,
