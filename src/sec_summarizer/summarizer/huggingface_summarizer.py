@@ -1,4 +1,4 @@
-from transformers import pipeline
+from transformers import AutoConfig, pipeline
 
 
 class HuggingfaceSummarizer:
@@ -10,6 +10,15 @@ class HuggingfaceSummarizer:
         except Exception as e:
             msg = f"Error loading HuggingFace model '{model_name}': {e}"
             raise Exception(msg) from e
+
+    @staticmethod
+    def is_model_cached(model_name: str) -> bool:
+        """Check if the model is cached locally."""
+        try:
+            _ = AutoConfig.from_pretrained(model_name, local_files_only=True)
+            return True
+        except Exception:
+            return False
 
     def summarize(
         self,

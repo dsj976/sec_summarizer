@@ -1,4 +1,7 @@
+import pytest
+
 from sec_summarizer.summarizer.base import Summarizer
+from sec_summarizer.summarizer.huggingface_summarizer import HuggingfaceSummarizer
 
 
 def test_chunk_text():
@@ -23,3 +26,28 @@ def test_chunk_text():
     assert len(chunks) == 2
     assert chunks[0] == sentences[0] + " " + sentences[1]
     assert chunks[1] == sentences[2] + " " + sentences[3]
+
+
+@pytest.mark.skipif(
+    not HuggingfaceSummarizer.is_model_cached("t5-small"),
+    reason="HuggingFace model is not cached locally.",
+)
+def test_huggingface_summarizer():
+    """
+    Test the Summarizer class.
+    """
+    sample_text = [
+        "This is a test sentence. "
+        "This is another test sentence. "
+        "This is yet another test sentence."
+    ]
+    model_name = "t5-small"
+    summarizer = HuggingfaceSummarizer(model_name)
+    summary = summarizer.summarize(
+        sample_text,
+        max_length=30,
+        min_length=10,
+        do_sample=False,
+    )
+    assert isinstance(summary, str)
+    assert len(summary) > 0
