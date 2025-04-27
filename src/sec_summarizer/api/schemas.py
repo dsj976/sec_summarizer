@@ -25,11 +25,12 @@ class FilingResponse(BaseModel):
     business_description: str
 
 
-class FilingSummary(BaseModel):
+class SummaryResponse(BaseModel):
     id: int
     company_id: int
     filing_type: str
     filing_date: datetime
+    business_description: str
     business_summary: str
     model_used: str
     created_at: datetime

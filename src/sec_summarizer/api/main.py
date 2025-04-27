@@ -3,15 +3,18 @@ import os
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from sec_summarizer.api.schemas import (
     CompanyCreate,
     CompanyResponse,
     FilingResponse,
+    SummaryResponse,
 )
 from sec_summarizer.database.engine import get_db, init_db
 from sec_summarizer.database.models import Company, Filing
 from sec_summarizer.edgar_collector import EdgarCollector
+from sec_summarizer.summarizer.base import Summarizer
 
 app = FastAPI(
     title="SEC Summarizer API",
@@ -27,7 +30,6 @@ app = FastAPI(
 def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
     """Create a new company record in the database."""
 
-    # check if the company already exists
     existing_company = db.query(Company).filter_by(ticker=company.ticker).first()
     if existing_company:
         raise HTTPException(
@@ -110,6 +112,69 @@ def create_filing(
         else new_filing.business_description
     )
     return new_filing
+
+
+@app.patch("/filings/{ticker}/summarize", response_model=SummaryResponse)
+def summarize_filing(
+    ticker: str,
+    model: str = "huggingface-facebook/bart-large-cnn",
+    db: Session = Depends(get_db),
+):
+    """Summarize the business description of a filing for a given company ticker."""
+
+    # check if the company exists
+    company = db.query(Company).filter_by(ticker=ticker).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Company {ticker} not found.",
+        )
+
+    # check if the filing exists
+    filing = (
+        db.query(Filing)
+        .filter_by(
+            company_id=company.id,
+        )
+        .first()
+    )
+    if not filing:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Filing for {ticker} not found.",
+        )
+
+    # check there is a business description
+    business_description = filing.business_description
+    if not business_description:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Business description for {ticker} is empty.",
+        )
+
+    # summarize the business description
+    summarizer = Summarizer(text=business_description, model=model)
+    summarizer.summarize()
+    if not summarizer.summary:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to summarize the business description.",
+        )
+
+    # update the filing with the summary
+    filing.business_summary = summarizer.summary
+    filing.model_used = model
+    filing.created_at = datetime.now()
+    db.commit()
+    db.refresh(filing)
+
+    # truncate the business description to 1000 characters
+    filing.business_description = (
+        filing.business_description[:1000] + "..."
+        if len(filing.business_description) > 1000
+        else filing.business_description
+    )
+    return filing
 
 
 def main():
