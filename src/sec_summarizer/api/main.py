@@ -1,7 +1,5 @@
-import os
 from datetime import datetime
 
-import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
@@ -250,12 +248,7 @@ def delete_company(ticker: str, db: Session = Depends(get_db)):
     return {"detail": f"Company {ticker} deleted."}
 
 
-def main():
+@app.on_event("startup")
+def startup_event():
+    """Initialize the database on startup."""
     init_db()
-
-    port = int(os.getenv("PORT", "8000"))
-    uvicorn.run("sec_summarizer.api.main:app", host="0.0.0.0", port=port, reload=True)
-
-
-if __name__ == "__main__":
-    main()
