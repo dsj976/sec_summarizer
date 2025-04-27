@@ -44,6 +44,26 @@ def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
     return new_company
 
 
+@app.get("/companies/{ticker}", response_model=CompanyResponse)
+def get_company(ticker: str, db: Session = Depends(get_db)):
+    """Get a company record by its ticker symbol."""
+
+    company = db.query(Company).filter_by(ticker=ticker).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail="Company not found.",
+        )
+    return company
+
+
+@app.get("/companies/", response_model=list[CompanyResponse])
+def get_companies(db: Session = Depends(get_db)):
+    """Get all company records in the database."""
+
+    return db.query(Company).all()
+
+
 @app.post("/filings/", response_model=FilingSummary)
 def create_filing(
     filing: FilingCreate,
