@@ -201,6 +201,55 @@ def get_filing(ticker: str, db: Session = Depends(get_db)):
     return filing
 
 
+@app.delete("/filings/{ticker}")
+def delete_filing(ticker: str, db: Session = Depends(get_db)):
+    """Delete a filing record by its company ticker symbol."""
+
+    company = db.query(Company).filter_by(ticker=ticker).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Company {ticker} not found.",
+        )
+    filing = (
+        db.query(Filing)
+        .filter_by(
+            company_id=company.id,
+        )
+        .first()
+    )
+    if not filing:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Filing for {ticker} not found.",
+        )
+    db.delete(filing)
+    db.commit()
+    return {"detail": f"Filing for {ticker} deleted."}
+
+
+@app.delete("/companies/{ticker}")
+def delete_company(ticker: str, db: Session = Depends(get_db)):
+    """Delete a company record by its ticker symbol."""
+
+    company = db.query(Company).filter_by(ticker=ticker).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Company {ticker} not found.",
+        )
+
+    filings = db.query(Filing).filter_by(company_id=company.id).all()
+    if filings:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete company {ticker} with existing filings.",
+        )
+    db.delete(company)
+    db.commit()
+    return {"detail": f"Company {ticker} deleted."}
+
+
 def main():
     init_db()
 
