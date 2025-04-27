@@ -33,6 +33,15 @@ In order to serve the API from a Docker container, you should create a `.env` fi
 EDGAR_IDENTITY="anonymous@user.com"
 ```
 
+## Software Stack
+
+The following libraries are used in this project:
+
+- [Edgartools](https://dgunning.github.io/edgartools/) - Used to fetch the latest 10-K filing from the SEC EDGAR database.
+- [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) - Used to summarize the business description from the 10-K filing.
+- [SQLAlchemy](https://www.sqlalchemy.org/) - Used to store the summarized business description in a SQLite database.
+- [FastAPI](https://fastapi.tiangolo.com/) - Used to serve the API.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on how to contribute.
