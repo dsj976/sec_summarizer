@@ -17,15 +17,12 @@ class CompanyResponse(BaseModel):
         orm_mode = True
 
 
-class FilingCreate(BaseModel):
-    company_ticker: str = Field(
-        ..., description="Company stock ticker", example="GOOGL"
-    )
-    model: str = Field(
-        default="huggingface-facebook/bart-large-cnn",
-        description="Model to be used for summarization",
-        example="huggingface-facebook/bart-large-cnn",
-    )
+class FilingResponse(BaseModel):
+    id: int
+    company_id: int
+    filing_type: str
+    filing_date: datetime
+    business_description: str
 
 
 class FilingSummary(BaseModel):

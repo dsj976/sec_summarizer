@@ -7,13 +7,11 @@ from sqlalchemy.orm import Session
 from sec_summarizer.api.schemas import (
     CompanyCreate,
     CompanyResponse,
-    FilingCreate,
-    FilingSummary,
+    FilingResponse,
 )
 from sec_summarizer.database.engine import get_db, init_db
 from sec_summarizer.database.models import Company, Filing
 from sec_summarizer.edgar_collector import EdgarCollector
-from sec_summarizer.summarizer.base import Summarizer
 
 app = FastAPI(
     title="SEC Summarizer API",
@@ -64,15 +62,15 @@ def get_companies(db: Session = Depends(get_db)):
     return db.query(Company).all()
 
 
-@app.post("/filings/", response_model=FilingSummary)
+@app.post("/filings/{ticker}", response_model=FilingResponse)
 def create_filing(
-    filing: FilingCreate,
+    ticker: str,
     db: Session = Depends(get_db),
 ):
-    """Create a new filing record in the database."""
+    """Create a new filing record in the database for a given company ticker."""
 
     # check if the company exists
-    company = db.query(Company).filter_by(ticker=filing.company_ticker).first()
+    company = db.query(Company).filter_by(ticker=ticker).first()
     if not company:
         raise HTTPException(
             status_code=404,
@@ -94,23 +92,23 @@ def create_filing(
         )
 
     # fetch the filing from SEC EDGAR
-    collector = EdgarCollector(filing.company_ticker)
+    collector = EdgarCollector(ticker)
     collector.get_business_description()
-    summarizer = Summarizer(
-        text=collector.business_description,
-        model=filing.model,
-    )
-    summarizer.summarize()
+
     new_filing = Filing(
         company_id=company.id,
         filing_date=collector.filing.filing_date,
         business_description=collector.business_description,
-        business_summary=summarizer.summary,
-        model_used=filing.model,
     )
     db.add(new_filing)
     db.commit()
     db.refresh(new_filing)
+    # truncate the business description to 1000 characters
+    new_filing.business_description = (
+        new_filing.business_description[:1000] + "..."
+        if len(new_filing.business_description) > 1000
+        else new_filing.business_description
+    )
     return new_filing
 
 
