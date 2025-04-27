@@ -4,9 +4,16 @@ import uvicorn
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-from sec_summarizer.api.schemas import CompanyCreate, CompanyResponse
+from sec_summarizer.api.schemas import (
+    CompanyCreate,
+    CompanyResponse,
+    FilingCreate,
+    FilingSummary,
+)
 from sec_summarizer.database.engine import get_db, init_db
-from sec_summarizer.database.models import Company
+from sec_summarizer.database.models import Company, Filing
+from sec_summarizer.edgar_collector import EdgarCollector
+from sec_summarizer.summarizer.base import Summarizer
 
 app = FastAPI(
     title="SEC Summarizer API",
@@ -35,6 +42,56 @@ def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_company)
     return new_company
+
+
+@app.post("/filings/", response_model=FilingSummary)
+def create_filing(
+    filing: FilingCreate,
+    db: Session = Depends(get_db),
+):
+    """Create a new filing record in the database."""
+
+    # check if the company exists
+    company = db.query(Company).filter_by(ticker=filing.company_ticker).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail="Company not found.",
+        )
+
+    # check if the filing already exists
+    existing_filing = (
+        db.query(Filing)
+        .filter_by(
+            company_id=company.id,
+        )
+        .first()
+    )
+    if existing_filing:
+        raise HTTPException(
+            status_code=400,
+            detail="Filing for this company already exists.",
+        )
+
+    # fetch the filing from SEC EDGAR
+    collector = EdgarCollector(filing.company_ticker)
+    collector.get_business_description()
+    summarizer = Summarizer(
+        text=collector.business_description,
+        model=filing.model,
+    )
+    summarizer.summarize()
+    new_filing = Filing(
+        company_id=company.id,
+        filing_date=collector.filing.filing_date,
+        business_description=collector.business_description,
+        business_summary=summarizer.summary,
+        model_used=filing.model,
+    )
+    db.add(new_filing)
+    db.commit()
+    db.refresh(new_filing)
+    return new_filing
 
 
 def main():
