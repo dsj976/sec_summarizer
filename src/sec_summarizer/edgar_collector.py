@@ -2,6 +2,8 @@ from edgar import Company
 
 
 class EdgarCollector:
+    """Class to collect 10-K filings from EDGAR."""
+
     def __init__(self, ticker):
         self.ticker = ticker
         self.filing = None
